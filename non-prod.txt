@@ -1,0 +1,674 @@
+https://access.redhat.com/documentation/en-us/red_hat_quay/3/html-single/deploy_red_hat_quay_for_proof-of-concept_non-production_purposes/index?extIdCarryOver=true&sc_cid=701f2000001Css5AAC#introduction-using-ssl
+
+
+sudo ./mirror-registry install --quayHostname registry.nonprod.dbp.pnb --quayRoot /data/mirror_registry/config --quayStorage /data/mirror_registry/storage
+
+
+INFO[2024-01-03 17:14:32] Quay installed successfully, config data is stored in /data/mirror_registry/config
+INFO[2024-01-03 17:14:32] Quay is available at https://registry.nonprod.dbp.pnb:8443 with credentials (init, wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m)
+
+
+
+podman login -u init \
+  -p wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m \
+  registry.nonprod.dbp.pnb:8443 \
+  --tls-verify=false
+
+
+
+"registry.nonprod.dbp.pnb:8443": {
+      "auth": "aW5pdDp3S0ZRang3RWlyMDRjM1pJMk9wVkMxeTZrYTlnZTU4bQ==",
+      "email": "dbtd.dbp@pnb.co.in"
+    }
+  },
+
+
+aW5pdDp3S0ZRang3RWlyMDRjM1pJMk9wVkMxeTZrYTlnZTU4bQ==
+
+
+OCP_RELEASE="4.12.30"
+LOCAL_REGISTRY="registry.nonprod.dbp.pnb:8443"
+LOCAL_REPOSITORY="ocp4/openshift4"
+PRODUCT_REPO="openshift-release-dev"
+LOCAL_SECRET_JSON="/home/dbpuser/pull-secret.json"
+RELEASE_NAME="ocp-release"
+ARCHITECTURE="x86_64"
+
+
+oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-${ARCHITECTURE} --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-${ARCHITECTURE} --dry-run
+
+
+ oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-${ARCHITECTURE} --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-${ARCHITECTURE} --insecure=true
+
+
+
+
+
+
+
+
+
+Success
+Update image:  registry.nonprod.dbp.pnb:8443/ocp4/openshift4:4.12.30-x86_64
+Mirror prefix: registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+Mirror prefix: registry.nonprod.dbp.pnb:8443/ocp4/openshift4:4.12.30-x86_64
+
+To use the new mirrored repository to install, add the following section to the install-config.yaml:
+
+imageContentSources:
+- mirrors:
+  - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+
+
+To use the new mirrored repository for upgrades, use the following to create an ImageContentSourcePolicy:
+
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  name: example
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+    source: quay.io/openshift-release-dev/ocp-release
+  - mirrors:
+    - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+    source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+
+#nameserver 10.192.18.105
+
+
+nameserver 10.192.18.104
+nameserver 10.192.18.103
+
+nameserver 10.209.27.103
+nameserver 10.209.27.104
+
+
+
+
+
+nameserver 10.209.27.105
+nameserver 10.192.18.121
+nameserver 10.192.18.122
+nameserver 10.192.18.123
+
+
+./openshift-install --dir ~/clusterconfig wait-for bootstrap-complete   --log-level=info
+
+export KUBECONFIG=~/home/dbpuser/clusterconfig/auth/kubeconfig
+
+oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}' | xargs --no-run-if-empty oc adm certificate approve
+
+./openshift-install --dir ~/clusterconfig wait-for install-complete
+
+
+
+[dbpuser@bastion ~]$ ./openshift-install --dir ~/clusterconfig wait-for bootstrap-complete   --log-level=info
+INFO Waiting up to 20m0s (until 11:02AM) for the Kubernetes API at https://api.nonprod.dbp.pnb:6443...
+INFO API v1.25.11+1485cc9 up
+INFO Waiting up to 30m0s (until 11:12AM) for bootstrapping to complete...
+INFO It is now safe to remove the bootstrap resources
+INFO Time elapsed: 0s
+
+
+[dbpuser@bastion ~]$ oc get co
+NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE   MESSAGE
+authentication                             4.12.30   True        False         False      22m
+baremetal                                  4.12.30   True        False         False      15h
+cloud-controller-manager                   4.12.30   True        False         False      15h
+cloud-credential                           4.12.30   True        False         False      26h
+cluster-autoscaler                         4.12.30   True        False         False      15h
+config-operator                            4.12.30   True        False         False      15h
+console                                    4.12.30   True        False         False      13m
+control-plane-machine-set                  4.12.30   True        False         False      15h
+csi-snapshot-controller                    4.12.30   True        False         False      15h
+dns                                        4.12.30   True        False         False      15h
+etcd                                       4.12.30   True        False         False      10h
+image-registry                             4.12.30   True        False         False      10h
+ingress                                    4.12.30   True        False         False      10h
+insights                                   4.12.30   True        False         False      15h
+kube-apiserver                             4.12.30   True        False         False      10h
+kube-controller-manager                    4.12.30   True        False         False      10h
+kube-scheduler                             4.12.30   True        False         False      15h
+kube-storage-version-migrator              4.12.30   True        False         False      3h56m
+machine-api                                4.12.30   True        False         False      15h
+machine-approver                           4.12.30   True        False         False      15h
+machine-config                             4.12.30   True        False         False      15h
+marketplace                                4.12.30   True        False         False      15h
+monitoring                                 4.12.30   True        False         False      5h3m
+network                                    4.12.30   True        False         False      15h
+node-tuning                                4.12.30   True        False         False      15h
+openshift-apiserver                        4.12.30   True        False         False      21m
+openshift-controller-manager               4.12.30   True        False         False      15h
+openshift-samples                          4.12.30   True        False         False      10h
+operator-lifecycle-manager                 4.12.30   True        False         False      15h
+operator-lifecycle-manager-catalog         4.12.30   True        False         False      15h
+operator-lifecycle-manager-packageserver   4.12.30   True        False         False      3h33m
+service-ca                                 4.12.30   True        False         False      15h
+storage                                    4.12.30   True        False         False      15h
+
+
+
+[dbpuser@bastion ~]$ ./openshift-install --dir ~/clusterconfig wait-for install-complete
+INFO Waiting up to 40m0s (until 11:23AM) for the cluster at https://api.nonprod.dbp.pnb:6443 to initialize...
+INFO Checking to see if there is a route at openshift-console/console...
+INFO Install complete!
+INFO To access the cluster as the system:admin user when using 'oc', run 'export KUBECONFIG=/home/dbpuser/clusterconfig/auth/kubeconfig'
+INFO Access the OpenShift web-console here: https://console-openshift-console.apps.nonprod.dbp.pnb
+INFO Login to the console with user: "kubeadmin", and password: "3BFYL-GT6sf-ySWS2-t23NT"
+INFO Time elapsed: 1s
+
+
+
+NTP:
+server 10.192.18.228 iburst
+server 10.209.12.200 iburst
+
+[core@worker1 ~]$ sudo su -
+Last login: Fri Jan  5 12:40:08 UTC 2024 on pts/0
+[root@worker1 ~]# timedatectl
+               Local time: Fri 2024-01-05 07:08:56 UTC
+           Universal time: Fri 2024-01-05 07:08:56 UTC
+                 RTC time: Fri 2024-01-05 07:08:56
+                Time zone: UTC (UTC, +0000)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+
+
+[root@worker1 ~]# chronyc tracking
+Reference ID    : 0AC012E4 (10.192.18.228)
+Stratum         : 2
+Ref time (UTC)  : Fri Jan 05 07:09:19 2024
+System time     : 0.000000418 seconds slow of NTP time
+Last offset     : +0.001331881 seconds
+RMS offset      : 0.001331881 seconds
+Frequency       : 12.397 ppm fast
+Residual freq   : +0.003 ppm
+Skew            : 9.237 ppm
+Root delay      : 0.001167385 seconds
+Root dispersion : 0.000236906 seconds
+Update interval : 64.5 seconds
+Leap status     : Normal
+
+
+
+htpasswd:
+ocpadmin / oShift@123
+developer / dev@123
+
+
+
+
+
+
+
+
+
+[dbpuser@registry ~]$ openssl genrsa -out rootCA.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+....................................................+++++
+.................+++++
+e is 65537 (0x010001)
+[dbpuser@registry ~]$ openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.pem
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:IN
+State or Province Name (full name) []:Delhi
+Locality Name (eg, city) [Default City]:Delhi
+Organization Name (eg, company) [Default Company Ltd]:Punjab National Bank
+Organizational Unit Name (eg, section) []:DBTD
+Common Name (eg, your name or your server's hostname) []:registry.nonprod.dbp.pnb:8443
+Email Address []:
+
+
+
+[dbpuser@registry ~]$ openssl genrsa -out ssl.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+...........................+++++
+...................................+++++
+e is 65537 (0x010001)
+[dbpuser@registry ~]$ openssl req -new -key ssl.key -out ssl.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:IN
+State or Province Name (full name) []:Delhi
+Locality Name (eg, city) [Default City]:Delhi
+Organization Name (eg, company) [Default Company Ltd]:Punjab National Bank
+Organizational Unit Name (eg, section) []:DBTD
+Common Name (eg, your name or your server's hostname) []:registry.nonprod.dbp.pnb
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+[dbpuser@registry ~]$ ls
+DBP                        image-archive.tar                              manifests-redhat-operator-index-1704519784  mirror-registry.tar.gz  pause.tar     pull-secret.json  quay.tar      redis.tar   rootCA.pem  ssl.key
+execution-environment.tar  manifests-certified-operator-index-1704541142  mirror-registry                             myfile.html             postgres.tar  pull-secret.txt   redhat1.html  rootCA.key  ssl.csr
+[dbpuser@registry ~]$ vim openssl.cnf
+[dbpuser@registry ~]$ openssl x509 -req -in ssl.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out ssl.cert -days 356 -extensions v3_req -extfile openssl.cnf
+Signature ok
+subject=C = IN, ST = Delhi, L = Delhi, O = Punjab National Bank, OU = DBTD, CN = registry.nonprod.dbp.pnb
+Getting CA Private Key
+[dbpuser@registry ~]$
+
+
+podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-apache default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh-apache:v1 --tls-verify=false
+
+
+
+
+
+s3:
+      bucket: dbp-nonprod
+      region: IN
+      regionEndpoint: https://dbp-nonprod.dbp.hcpdr.obc.co.in
+
+
+
+
+
+podman  login -u kubeadmin -p 3BFYL-GT6sf-ySWS2-t23NT default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify
+ 1219  2024-01-11 18:26:37 podman  login -u kubeadmin -p 3BFYL-GT6sf-ySWS2-t23NT default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1220  2024-01-11 18:28:01 podman login -u kubeadmin -p 3BFYL-GT6sf-ySWS2-t23NT default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1221  2024-01-11 18:28:51 podman login -u ocpadmin -p oShift@123  default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1222  2024-01-11 18:30:01 podman login -u ocpadmin -p oShift@123  https://default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1223  2024-01-11 18:30:53 podman login -u ocpadmin -p oShift@123 https://default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1224  2024-01-11 18:32:04 oc whoami
+ 1225  2024-01-11 18:32:34 podman login -u $(oc whoami) -p $(oc whoami -t)
+ 1226  2024-01-11 18:32:57 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1227  2024-01-11 18:34:14 oc login -u ocpadmin -p oShift@123
+ 1228  2024-01-11 18:34:48 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1229  2024-01-11 18:36:12 podman login -u ocpadmin -p oShift@123  default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1230  2024-01-11 18:36:41 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1231  2024-01-11 18:37:18 podman login -u ocpadmin -p oShift@123 default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1232  2024-01-11 18:37:48 oc whoami -t
+ 1233  2024-01-11 18:38:34 podman login -u ocpadmin -p sha256~WuzqjuPSiAC543sBDkNRrIezEehuYYIPuKPayiJzgWc default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1234  2024-01-11 18:39:33 oc login -u saurabh -p Newgen@123
+ 1235  2024-01-11 18:40:27 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1236  2024-01-11 18:44:32 skopeo
+ 1237  2024-01-11 18:46:10 podman login -u init -p wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m registry.nonprod.dbp.pnb:8443 --tls-verify=false
+ 1238  2024-01-11 18:46:55 telnet registry.nonprod.dbp.pnb 9443
+ 1239  2024-01-11 18:47:02 telnet registry.nonprod.dbp.pnb 8443
+ 1240  2024-01-11 18:47:30 podman login -u init -p wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m registry.nonprod.dbp.pnb:8443 --tls-verify=false
+ 1241  2024-01-11 18:48:30 podman pull registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24
+ 1242  2024-01-11 18:49:01 podman pull registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 --tls-verify=false
+ 1243  2024-01-11 18:51:57 podman images
+ 1244  2024-01-11 18:52:30 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/ocp4/openshift4-httpd-24:v1
+ 1245  2024-01-11 18:53:16 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh-httpd-24:v1
+ 1246  2024-01-11 18:54:14 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh/httpd-24:v1 --tls-verify=false
+ 1247  2024-01-11 18:54:50 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh-httpd-24:v1 --tls-verify=false
+
+
+
+
+
+
+
+
+
+
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.8/html-single/registry/index#prerequisites       DOCUMENT FOR CREATING INTERNAL REGISTRY url
+
+ oc create secret generic image-registry-private-configuration-user --from-literal=REGISTRY_STORAGE_S3_ACCESSKEY=ZGJw --from-literal=REGISTRY_STORAGE_S3_SECRETKEY=0ced491b72d42557a9e7ba71debfc866 --namespace openshift-image-registry
+
+
+
+
+
+
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.11/html/registry/setting-up-and-configuring-the-registry            DOCS. FOR OBJECT STORAGE
+[dbpuser@bastion nonprod]$ vim ocp_nonprod.txt
+[dbpuser@bastion nonprod]$ cat ocp_nonprod.txt
+https://access.redhat.com/documentation/en-us/red_hat_quay/3/html-single/deploy_red_hat_quay_for_proof-of-concept_non-production_purposes/index?extIdCarryOver=true&sc_cid=701f2000001Css5AAC#introduction-using-ssl
+
+
+sudo ./mirror-registry install --quayHostname registry.nonprod.dbp.pnb --quayRoot /data/mirror_registry/config --quayStorage /data/mirror_registry/storage
+
+
+INFO[2024-01-03 17:14:32] Quay installed successfully, config data is stored in /data/mirror_registry/config
+INFO[2024-01-03 17:14:32] Quay is available at https://registry.nonprod.dbp.pnb:8443 with credentials (init, wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m)
+
+
+
+podman login -u init \
+  -p wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m \
+  registry.nonprod.dbp.pnb:8443 \
+  --tls-verify=false
+
+
+
+"registry.nonprod.dbp.pnb:8443": {
+      "auth": "aW5pdDp3S0ZRang3RWlyMDRjM1pJMk9wVkMxeTZrYTlnZTU4bQ==",
+      "email": "dbtd.dbp@pnb.co.in"
+    }
+  },
+
+
+aW5pdDp3S0ZRang3RWlyMDRjM1pJMk9wVkMxeTZrYTlnZTU4bQ==
+
+
+OCP_RELEASE="4.12.30"
+LOCAL_REGISTRY="registry.nonprod.dbp.pnb:8443"
+LOCAL_REPOSITORY="ocp4/openshift4"
+PRODUCT_REPO="openshift-release-dev"
+LOCAL_SECRET_JSON="/home/dbpuser/pull-secret.json"
+RELEASE_NAME="ocp-release"
+ARCHITECTURE="x86_64"
+
+
+oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-${ARCHITECTURE} --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-${ARCHITECTURE} --dry-run
+
+
+ oc adm release mirror -a ${LOCAL_SECRET_JSON} --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE}-${ARCHITECTURE} --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} --to-release-image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}-${ARCHITECTURE} --insecure=true
+
+
+
+
+
+
+
+
+
+Success
+Update image:  registry.nonprod.dbp.pnb:8443/ocp4/openshift4:4.12.30-x86_64
+Mirror prefix: registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+Mirror prefix: registry.nonprod.dbp.pnb:8443/ocp4/openshift4:4.12.30-x86_64
+
+To use the new mirrored repository to install, add the following section to the install-config.yaml:
+
+imageContentSources:
+- mirrors:
+  - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+
+
+To use the new mirrored repository for upgrades, use the following to create an ImageContentSourcePolicy:
+
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  name: example
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+    source: quay.io/openshift-release-dev/ocp-release
+  - mirrors:
+    - registry.nonprod.dbp.pnb:8443/ocp4/openshift4
+    source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+
+#nameserver 10.192.18.105
+
+
+nameserver 10.192.18.104
+nameserver 10.192.18.103
+
+nameserver 10.209.27.103
+nameserver 10.209.27.104
+
+
+
+
+
+nameserver 10.209.27.105
+nameserver 10.192.18.121
+nameserver 10.192.18.122
+nameserver 10.192.18.123
+
+
+./openshift-install --dir ~/clusterconfig wait-for bootstrap-complete   --log-level=info
+
+export KUBECONFIG=~/home/dbpuser/clusterconfig/auth/kubeconfig
+
+oc get csr -o go-template='{{range .items}}{{if not .status}}{{.metadata.name}}{{"\n"}}{{end}}{{end}}' | xargs --no-run-if-empty oc adm certificate approve
+
+./openshift-install --dir ~/clusterconfig wait-for install-complete
+
+
+
+[dbpuser@bastion ~]$ ./openshift-install --dir ~/clusterconfig wait-for bootstrap-complete   --log-level=info
+INFO Waiting up to 20m0s (until 11:02AM) for the Kubernetes API at https://api.nonprod.dbp.pnb:6443...
+INFO API v1.25.11+1485cc9 up
+INFO Waiting up to 30m0s (until 11:12AM) for bootstrapping to complete...
+INFO It is now safe to remove the bootstrap resources
+INFO Time elapsed: 0s
+
+
+[dbpuser@bastion ~]$ oc get co
+NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE   MESSAGE
+authentication                             4.12.30   True        False         False      22m
+baremetal                                  4.12.30   True        False         False      15h
+cloud-controller-manager                   4.12.30   True        False         False      15h
+cloud-credential                           4.12.30   True        False         False      26h
+cluster-autoscaler                         4.12.30   True        False         False      15h
+config-operator                            4.12.30   True        False         False      15h
+console                                    4.12.30   True        False         False      13m
+control-plane-machine-set                  4.12.30   True        False         False      15h
+csi-snapshot-controller                    4.12.30   True        False         False      15h
+dns                                        4.12.30   True        False         False      15h
+etcd                                       4.12.30   True        False         False      10h
+image-registry                             4.12.30   True        False         False      10h
+ingress                                    4.12.30   True        False         False      10h
+insights                                   4.12.30   True        False         False      15h
+kube-apiserver                             4.12.30   True        False         False      10h
+kube-controller-manager                    4.12.30   True        False         False      10h
+kube-scheduler                             4.12.30   True        False         False      15h
+kube-storage-version-migrator              4.12.30   True        False         False      3h56m
+machine-api                                4.12.30   True        False         False      15h
+machine-approver                           4.12.30   True        False         False      15h
+machine-config                             4.12.30   True        False         False      15h
+marketplace                                4.12.30   True        False         False      15h
+monitoring                                 4.12.30   True        False         False      5h3m
+network                                    4.12.30   True        False         False      15h
+node-tuning                                4.12.30   True        False         False      15h
+openshift-apiserver                        4.12.30   True        False         False      21m
+openshift-controller-manager               4.12.30   True        False         False      15h
+openshift-samples                          4.12.30   True        False         False      10h
+operator-lifecycle-manager                 4.12.30   True        False         False      15h
+operator-lifecycle-manager-catalog         4.12.30   True        False         False      15h
+operator-lifecycle-manager-packageserver   4.12.30   True        False         False      3h33m
+service-ca                                 4.12.30   True        False         False      15h
+storage                                    4.12.30   True        False         False      15h
+
+
+
+[dbpuser@bastion ~]$ ./openshift-install --dir ~/clusterconfig wait-for install-complete
+INFO Waiting up to 40m0s (until 11:23AM) for the cluster at https://api.nonprod.dbp.pnb:6443 to initialize...
+INFO Checking to see if there is a route at openshift-console/console...
+INFO Install complete!
+INFO To access the cluster as the system:admin user when using 'oc', run 'export KUBECONFIG=/home/dbpuser/clusterconfig/auth/kubeconfig'
+INFO Access the OpenShift web-console here: https://console-openshift-console.apps.nonprod.dbp.pnb
+INFO Login to the console with user: "kubeadmin", and password: "3BFYL-GT6sf-ySWS2-t23NT"
+INFO Time elapsed: 1s
+
+
+
+NTP:
+server 10.192.18.228 iburst
+server 10.209.12.200 iburst
+
+[core@worker1 ~]$ sudo su -
+Last login: Fri Jan  5 12:40:08 UTC 2024 on pts/0
+[root@worker1 ~]# timedatectl
+               Local time: Fri 2024-01-05 07:08:56 UTC
+           Universal time: Fri 2024-01-05 07:08:56 UTC
+                 RTC time: Fri 2024-01-05 07:08:56
+                Time zone: UTC (UTC, +0000)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+
+
+[root@worker1 ~]# chronyc tracking
+Reference ID    : 0AC012E4 (10.192.18.228)
+Stratum         : 2
+Ref time (UTC)  : Fri Jan 05 07:09:19 2024
+System time     : 0.000000418 seconds slow of NTP time
+Last offset     : +0.001331881 seconds
+RMS offset      : 0.001331881 seconds
+Frequency       : 12.397 ppm fast
+Residual freq   : +0.003 ppm
+Skew            : 9.237 ppm
+Root delay      : 0.001167385 seconds
+Root dispersion : 0.000236906 seconds
+Update interval : 64.5 seconds
+Leap status     : Normal
+
+
+
+htpasswd:
+ocpadmin / oShift@123
+developer / dev@123
+
+
+
+
+
+
+
+
+
+[dbpuser@registry ~]$ openssl genrsa -out rootCA.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+....................................................+++++
+.................+++++
+e is 65537 (0x010001)
+[dbpuser@registry ~]$ openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.pem
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:IN
+State or Province Name (full name) []:Delhi
+Locality Name (eg, city) [Default City]:Delhi
+Organization Name (eg, company) [Default Company Ltd]:Punjab National Bank
+Organizational Unit Name (eg, section) []:DBTD
+Common Name (eg, your name or your server's hostname) []:registry.nonprod.dbp.pnb:8443
+Email Address []:
+
+
+
+[dbpuser@registry ~]$ openssl genrsa -out ssl.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+...........................+++++
+...................................+++++
+e is 65537 (0x010001)
+[dbpuser@registry ~]$ openssl req -new -key ssl.key -out ssl.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:IN
+State or Province Name (full name) []:Delhi
+Locality Name (eg, city) [Default City]:Delhi
+Organization Name (eg, company) [Default Company Ltd]:Punjab National Bank
+Organizational Unit Name (eg, section) []:DBTD
+Common Name (eg, your name or your server's hostname) []:registry.nonprod.dbp.pnb
+Email Address []:
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+[dbpuser@registry ~]$ ls
+DBP                        image-archive.tar                              manifests-redhat-operator-index-1704519784  mirror-registry.tar.gz  pause.tar     pull-secret.json  quay.tar      redis.tar   rootCA.pem  ssl.key
+execution-environment.tar  manifests-certified-operator-index-1704541142  mirror-registry                             myfile.html             postgres.tar  pull-secret.txt   redhat1.html  rootCA.key  ssl.csr
+[dbpuser@registry ~]$ vim openssl.cnf
+[dbpuser@registry ~]$ openssl x509 -req -in ssl.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out ssl.cert -days 356 -extensions v3_req -extfile openssl.cnf
+Signature ok
+subject=C = IN, ST = Delhi, L = Delhi, O = Punjab National Bank, OU = DBTD, CN = registry.nonprod.dbp.pnb
+Getting CA Private Key
+[dbpuser@registry ~]$
+
+
+podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-apache default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh-apache:v1 --tls-verify=false
+
+
+
+
+
+s3:
+      bucket: dbp-nonprod
+      region: IN
+      regionEndpoint: https://dbp-nonprod.dbp.hcpdr.obc.co.in
+
+
+
+
+
+podman  login -u kubeadmin -p 3BFYL-GT6sf-ySWS2-t23NT default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify
+ 1219  2024-01-11 18:26:37 podman  login -u kubeadmin -p 3BFYL-GT6sf-ySWS2-t23NT default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1220  2024-01-11 18:28:01 podman login -u kubeadmin -p 3BFYL-GT6sf-ySWS2-t23NT default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1221  2024-01-11 18:28:51 podman login -u ocpadmin -p oShift@123  default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1222  2024-01-11 18:30:01 podman login -u ocpadmin -p oShift@123  https://default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1223  2024-01-11 18:30:53 podman login -u ocpadmin -p oShift@123 https://default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1224  2024-01-11 18:32:04 oc whoami
+ 1225  2024-01-11 18:32:34 podman login -u $(oc whoami) -p $(oc whoami -t)
+ 1226  2024-01-11 18:32:57 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1227  2024-01-11 18:34:14 oc login -u ocpadmin -p oShift@123
+ 1228  2024-01-11 18:34:48 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1229  2024-01-11 18:36:12 podman login -u ocpadmin -p oShift@123  default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1230  2024-01-11 18:36:41 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1231  2024-01-11 18:37:18 podman login -u ocpadmin -p oShift@123 default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1232  2024-01-11 18:37:48 oc whoami -t
+ 1233  2024-01-11 18:38:34 podman login -u ocpadmin -p sha256~WuzqjuPSiAC543sBDkNRrIezEehuYYIPuKPayiJzgWc default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1234  2024-01-11 18:39:33 oc login -u saurabh -p Newgen@123
+ 1235  2024-01-11 18:40:27 podman login -u $(oc whoami) -p $(oc whoami -t) default-route-openshift-image-registry.apps.nonprod.dbp.pnb --tls-verify=false
+ 1236  2024-01-11 18:44:32 skopeo
+ 1237  2024-01-11 18:46:10 podman login -u init -p wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m registry.nonprod.dbp.pnb:8443 --tls-verify=false
+ 1238  2024-01-11 18:46:55 telnet registry.nonprod.dbp.pnb 9443
+ 1239  2024-01-11 18:47:02 telnet registry.nonprod.dbp.pnb 8443
+ 1240  2024-01-11 18:47:30 podman login -u init -p wKFQjx7Eir04c3ZI2OpVC1y6ka9ge58m registry.nonprod.dbp.pnb:8443 --tls-verify=false
+ 1241  2024-01-11 18:48:30 podman pull registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24
+ 1242  2024-01-11 18:49:01 podman pull registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 --tls-verify=false
+ 1243  2024-01-11 18:51:57 podman images
+ 1244  2024-01-11 18:52:30 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/ocp4/openshift4-httpd-24:v1
+ 1245  2024-01-11 18:53:16 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh-httpd-24:v1
+ 1246  2024-01-11 18:54:14 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh/httpd-24:v1 --tls-verify=false
+ 1247  2024-01-11 18:54:50 podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-httpd-24 default-route-openshift-image-registry.apps.nonprod.dbp.pnb/dev/saurabh-httpd-24:v1 --tls-verify=false
+
+
+
+
+
+
+
+
+
+
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.8/html-single/registry/index#prerequisites       DOCUMENT FOR CREATING INTERNAL REGISTRY url
+
+ oc create secret generic image-registry-private-configuration-user --from-literal=REGISTRY_STORAGE_S3_ACCESSKEY=ZGJw --from-literal=REGISTRY_STORAGE_S3_SECRETKEY=0ced491b72d42557a9e7ba71debfc866 --namespace openshift-image-registry
+
+
+
+
+
+
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.11/html/registry/setting-up-and-configuring-the-registry            DOCS. FOR OBJECT STORAGE

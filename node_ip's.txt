@@ -1,0 +1,21 @@
+A & PTR 10.192.235.61   "api.nonprod.dbp.pnb
+"       6443    10.192.253.52/53/54/48
+A & PTR 10.192.235.62   "api-int.nonprod.dbp.pnb
+"       6443,22623      10.192.253.52/53/54/48
+A & PTR 10.192.235.63   "*.apps.nonprod.dbp.pnb
+"       443,1936        10.192.253.52/53/54
+A & PTR 10.192.235.52   "master1.nonprod.dbp.pnb
+"               10.192.237.173
+A & PTR 10.192.235.53   "master2.nonprod.dbp.pnb
+"               10.192.237.174
+A & PTR 10.192.235.54   "master3.nonprod.dbp.pnb
+"               10.192.237.175
+A & PTR 10.192.235.55   "worker1.nonprod.dbp.pnb
+"               10.192.237.170
+A & PTR "10.192.235.48
+(Temporary)"    "bootstrap.nonprod.dbp.pnb
+"
+A & PTR 10.192.235.47   "bastion.nonprod.dbp.pnb
+"
+A & PTR lnet    "registry.nonprod.dbp.pnb
+"

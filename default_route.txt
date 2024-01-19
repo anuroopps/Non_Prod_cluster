@@ -1,0 +1,60 @@
+OCP provides an internal, integrated container image registry that can be deployed in your OpenShift Container Platform environment to locally manage images.
+
+The Image Registry Operator runs in the openshift-image-registry namespace, and manages the registry instance in that location.
+
+The Operator is defined by the
+
+configs.imageregistry.operator.openshift.io Custom Resource Definition (CRD).
+
+
+If you need to automatically enable the Image Registry default route, patch the Image Registry Operator CRD.
+
+Procedure :-
+-------------
+
+Patch the Image Registry Operator CRD using following command
+
+oc patch configs.imageregistry.operator.openshift.io/cluster --type merge -p '{"spec":{"defaultRoute":true}}'
+
+
+Configuring additional trust stores for image registry access :-
+----------------------------------------------------------------
+
+The image.config.openshift.io/cluster custom resource can contain a reference to a config map that contains additional certificate authorities to be trusted during image registry access.
+
+Prerequisites
+---------------
+
+The certificate authorities (CA) must be PEM-encoded.
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Configuring registry storage :-
+-------------------------------
+
+oc edit configs.imageregistry.operator.openshift.io/cluster
+
+
+add the following data,
+
+storage:
+  s3:
+    bucket: <bucket-name>
+    region: <region-name>
+
+sample Ex :-
+
+s3:
+      bucket: dbp-nonprod
+      region: IN
+      regionEndpoint: https://dbp-nonprod.dbp.hcpdr.obc.co.in
