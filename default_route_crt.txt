@@ -1,0 +1,11 @@
+ 552  2024-01-15 12:09:12 cat ca.crt
+  968  2024-01-18 18:08:12 oc get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d | sudo tee /etc/pki/ca-trust/source/anchors/${HOST}.cert  > dev/null
+  969  2024-01-18 18:08:23 oc get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d | sudo tee /etc/pki/ca-trust/source/anchors/${HOST}.crt  > dev/null
+  970  2024-01-18 18:08:37 oc get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d | sudo tee /etc/pki/ca-trust/source/anchors/${HOST}.crt > dev/null
+  971  2024-01-18 18:08:47 oc get secret -n openshift-ingress router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d | sudo tee /etc/pki/ca-trust/source/anchors/${HOST}.crt > /dev/null
+  977  2024-01-18 18:19:50 scp /etc/pki/ca-trust/source/anchors/default-route-openshift-image-registry.apps.nonprod.dbp.pnb.crt dbpuser-
+ 1008  2024-01-19 10:54:16 openssl pkcs12 -export -in tls.crt -inkey tls.key -out keystore.p12
+ 1011  2024-01-19 11:01:22 cat tls.crt
+ 1031  2024-01-19 11:32:20 scp default-route-openshift-image-registry.apps.nonprod.dbp.pnb.crt -i .ssh/ocp4 core@master3.nonprod.dbp.pnb:/home/core/
+ 1032  2024-01-19 11:32:30 sudo scp default-route-openshift-image-registry.apps.nonprod.dbp.pnb.crt -i .ssh/ocp4 core@master3.nonprod.dbp.pnb:/home/core/
+ 1033  2024-01-19 11:33:51 cat default-route-openshift-image-registry.apps.nonprod.dbp.pnb.crt
