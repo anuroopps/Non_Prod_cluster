@@ -1,0 +1,30 @@
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+spec:
+  identityProviders:
+  - name: htpasswd_provider
+    mappingMethod: claim
+    type: HTPasswd
+    htpasswd:
+      fileData:
+        name: htpass-secret
+  - name: PNB_NONPROD_LDAP
+    mappingMethod: claim
+    type: LDAP
+    ldap:
+      attributes:
+        id:
+        - sAMAccountName
+        name:
+        - Ajay Gopalan
+        preferredUsername:
+        - sAMAccountName
+        email:
+        - mail
+      bindDN: 5133142@pnb.net
+      bindPassword:
+        name: ldap-secret
+      insecure: true
+      url: ldap://pnb.net/OU=HO-DigitalBankingDivision-51750,OU=HeadOfficeUsers,DC=pnb,DC=net?sAMAccountName?sub?(&(objectclass=*)(|(memberOf=CN=PIM User Group,OU=Custom Security Groups,DC=pnb,DC=net)))
