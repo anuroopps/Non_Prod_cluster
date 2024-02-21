@@ -1,0 +1,7 @@
+vim ~/.bashrc or ~/.bash_profile file 
+add the following line
+export NO_PROXY=api.nonprod.dbp.pnb,*.nonprod.dbp.pnb
+
+save and exit
+
+source ~/.bashrc or ~/.bash_profile
