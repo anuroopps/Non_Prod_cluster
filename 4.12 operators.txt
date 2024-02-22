@@ -1,0 +1,5 @@
+Two types of operators
+1. CVO operators managed by CVO
+oc get co 
+2. LVM operators managed by LVM
+oc get operators
