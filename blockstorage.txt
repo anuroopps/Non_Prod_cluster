@@ -1,0 +1,3 @@
+CSI drivers won't support fc connected block storage
+and hitachi operators works only with the CSI drivers.
+so, we can't configure this storage with Hitachi operator HSPC instance 
