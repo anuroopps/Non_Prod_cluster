@@ -3,3 +3,9 @@ Two types of operators
 oc get co 
 2. LVM operators managed by LVM
 oc get operators
+
+
+Pods creation within the containers
+------------------------------------
+When the regular openshift user creates pods, containers within the pods run as unpreviledged accounts &
+When cluster administrator creates the pods, containers within the pods run as previleged account by default 
