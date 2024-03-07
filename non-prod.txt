@@ -277,8 +277,11 @@ podman push registry.nonprod.dbp.pnb:8443/ocp4/openshift4-apache default-route-o
 
 s3:
       bucket: dbp-nonprod
-      region: IN
-      regionEndpoint: https://dbp-nonprod.dbp.hcpdr.obc.co.in
+      region: us-east-1
+      encrypt: true
+      regionEndpoint: https://dbp.hcpdr.obc.co.in
+      truestedCA:
+        name: user-ca-bundle
 
 
 
